@@ -1,4 +1,4 @@
-# An_Open_Source_Collection_Of_IBD_Cohort_Identification_Models
+# An Open Source Collection Of IBD Cohort Identification Models
 ### IBD_NLP_Cohort_Identification_IC-IBD_Study_Part_2
 
 ## By Matt Stammers
