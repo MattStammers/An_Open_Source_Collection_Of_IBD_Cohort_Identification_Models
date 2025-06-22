@@ -15,7 +15,7 @@ pytest = "8.3.5"
 torch = { version = "^2.5.1", source = "pytorch-cuda", markers = "extra=='cuda' and extra!='cpu'" }
 torchvision = { version = "^0.20.1", source = "pytorch-cuda", markers = "extra=='cuda' and extra!='cpu'" }
 torchaudio = { version = "^2.5.1", source = "pytorch-cuda" }
-transformers = { extras = ["torch"], version = "4.49.0" }
+transformers = { extras = ["torch"], version = "4.50.0" }
 huggingface-hub = "^0.26.5"
 sentencepiece = "^0.2.0"
 shap = "0.47.0"
