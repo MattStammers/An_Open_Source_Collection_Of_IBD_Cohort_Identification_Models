@@ -1,13 +1,12 @@
-# An Open Source Collection Of IBD Cohort Identification Models
-### IBD_NLP_Cohort_Identification_IC-IBD_Study_Part_2
+# IBD_NLP_Cohort_Identification_Models_IC-IBD_Part_2
+
+## An_Open_Source_Collection_Of_IBD_Cohort_Identification_Models
 
 ## By Matt Stammers
 
-### 31/05/2025
+### 22/06/2025
 
 IBD Cohort Identification Code To Go with Accompanying Papers and Models
-
-These artefacts are made freely available to researchers to promote open science, improve robustness and make the work open to scrutiny. If a mistake or issue is found please raise an issue on the repository.
 
 ## Ratings/Features
 - Python Difficulty Level: Fairly Advanced (Not Particularly Recommended for Beginners)
