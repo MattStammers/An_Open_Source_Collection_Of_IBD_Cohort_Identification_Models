@@ -8,6 +8,16 @@
 
 IBD Cohort Identification Code To Go with Accompanying Papers and Models
 
+## Papers 
+1. [MedRxiv](https://www.medrxiv.org/content/10.1101/2025.07.06.25330961v1). Citation: Stammers M, Gwiggner M, Nouraei R, Metcalf C, Batchelor J. From Rule-Based to DeepSeek R1: A Robust Comparative Evaluation of Fifty Years of Natural Language Processing (NLP) Models To Identify Inflammatory Bowel Disease Cohorts. medRxiv. 2025:2025-07.
+2. [ResearchSquare](https://www.researchsquare.com/article/rs-6298636/v1). Citation: Stammers M, Sartain S, Cummings F, Kipps C, Nouraei R, Gwiggner M, Metcalf C, Batchelor J. Identification of Cohorts with Inflammatory Bowel Disease Amidst Fragmented Clinical Databases via Machine Learning.
+3. [BMC Gastroenterology](https://bmcgastroenterol.biomedcentral.com/articles/10.1186/s12876-025-03608-5). Stammers M, Ramgopal B, Owusu Nimako A, Vyas A, Nouraei R, Metcalf C, Batchelor J, Shepherd J, Gwiggner M. A foundation systematic review of natural language processing applied to gastroenterology & hepatology. BMC gastroenterology. 2025 Feb 6;25(1):58.
+
+## Models
+1. Contained in this repo and associated repositories as .joblb/.pkl files with associated disclaimers but from a trusted source. Use at your own discretion. 
+2. Collection of BERT-based models on HuggingFace [BERT Based Models](https://huggingface.co/collections/MattStammers/a-collection-of-ibd-bert-models-682b01badbaa646380f54b14)
+3. Model Demo on HuggingFace [IBD Cohort Identification Demo](https://huggingface.co/spaces/MattStammers/IBD_Cohort_Identification)
+
 ## Ratings/Features
 - Python Difficulty Level: Fairly Advanced (Not Particularly Recommended for Beginners)
 - Primary Code Purpose: Code Your Own Versions. Transparency for paper. Maximising generalisability and replicability.
@@ -81,4 +91,4 @@ This work is licensed under a
 
 ### Disclaimer
 
-No guarantee is given of model performance in any production capacity whatsoever. These models should be used in full accordance with the EU AI Act - Regulation 2024/1689. These are not CE marked medical devices and are suitable at this point only for research and development / experimentation. They can be improved but any improvements should be published openly and shared openly with the community. UHSFT and the author own the copyright and are choosing to share them freely under a CC BY-NC 4.0 Licence for the benefit of the wider research community.
+No guarantee is given of model performance in any production capacity whatsoever. These models should be used in full accordance with the EU AI Act - Regulation 2024/1689. These are not CE marked medical devices and are suitable at this point only for research and development / experimentation at users own discretion. They can be improved but any improvements should be published openly and shared openly with the community. UHSFT and the author own the copyright and are choosing to share them freely under a CC BY-NC 4.0 Licence for the benefit of the wider research community but not for commercial organisations who are breaking copyright law and infringing upon NHS intellectual property if they try to sell/market these models for profit.
