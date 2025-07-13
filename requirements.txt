@@ -152,7 +152,7 @@ pyzmq==26.3.0
 questionary==2.1.0
 RapidFuzz==3.12.2
 regex==2024.11.6
-requests==2.32.3
+requests==2.32.4
 rich==13.9.4
 ruff==0.9.10
 safetensors==0.5.3
