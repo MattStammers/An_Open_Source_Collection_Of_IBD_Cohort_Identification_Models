@@ -89,6 +89,6 @@ This work is licensed under a
 [cc-by-nc-image]: https://licensebuttons.net/l/by-nc/4.0/88x31.png
 [cc-by-nc-shield]: https://img.shields.io/badge/License-CC%20BY--NC%204.0-lightgrey.svg
 
-### Disclaimer
+### Legal
 
 No guarantee is given of model performance in any production capacity whatsoever. These models should be used in full accordance with the EU AI Act - Regulation 2024/1689. These are not CE marked medical devices and are suitable at this point only for research and development / experimentation at users own discretion. They can be improved but any improvements should be published openly and shared openly with the community. UHSFT and the author own the copyright and are choosing to share them freely under a CC BY-NC 4.0 Licence for the benefit of the wider research community but not for commercial organisations who are breaking copyright law and infringing upon NHS intellectual property if they try to sell/market these models for profit.
