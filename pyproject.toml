@@ -50,7 +50,7 @@ bs4 = "^0.0.2"
 # API and server development
 fastapi = "^0.115.6"
 uvicorn = "^0.34.0"
-aiohttp = "^3.11.10"
+aiohttp = "^3.12.14"
 
 # Utilities
 protobuf = "^5.29.5"
