@@ -70,6 +70,10 @@ To run the pipeline run:
 python main.py --disable-umls
 ```
 
+### Warnings 👀
+
+These models contain several known biases inherent in the training cohort itself. Most notably they underselect IBD diagnoses for female, wealthy and African patients. They are also overfitted to the training data and may underperform in other contexts. Use with caution. If you can improve them for the benefit of the world then please do so but not for profit - that is against the terms of the licence.
+
 ### Contributing
 
 If you would like to contribute futher to this project you can do so by submitting a pull request to this repo. If you remix or fork the project please attribute appropraitely. These models should not be used commercially. Obtaining profit by using them is forbidden as per the licence. If they are improved then they must be shared open source to the community.
