@@ -9,9 +9,9 @@
 IBD Cohort Identification Code To Go with Accompanying Papers and Models
 
 ## Papers 
-1. [MedRxiv](https://www.medrxiv.org/content/10.1101/2025.07.06.25330961v1). Citation: Stammers M, Gwiggner M, Nouraei R, Metcalf C, Batchelor J. From Rule-Based to DeepSeek R1: A Robust Comparative Evaluation of Fifty Years of Natural Language Processing (NLP) Models To Identify Inflammatory Bowel Disease Cohorts. medRxiv. 2025:2025-07.
-2. [ResearchSquare](https://www.researchsquare.com/article/rs-6298636/v1). Citation: Stammers M, Sartain S, Cummings F, Kipps C, Nouraei R, Gwiggner M, Metcalf C, Batchelor J. Identification of Cohorts with Inflammatory Bowel Disease Amidst Fragmented Clinical Databases via Machine Learning.
-3. [BMC Gastroenterology](https://bmcgastroenterol.biomedcentral.com/articles/10.1186/s12876-025-03608-5). Stammers M, Ramgopal B, Owusu Nimako A, Vyas A, Nouraei R, Metcalf C, Batchelor J, Shepherd J, Gwiggner M. A foundation systematic review of natural language processing applied to gastroenterology & hepatology. BMC gastroenterology. 2025 Feb 6;25(1):58.
+1. [BMJ Open Gastroenterology](https://bmjopengastro.bmj.com/content/12/1/e001977). Citation: Stammers M, Gwiggner M, Nouraei R, Metcalf C, Batchelor J. Robust comparative evaluation of 15 natural language processing algorithms to positively identify patients with inflammatory bowel disease from secondary care records. BMJ Open Gastroenterology. 2025 Oct 10;12(1).
+2. [Digestive Diseases and Sciences](https://link.springer.com/article/10.1007/s10620-025-09323-1). Citation: Stammers M, Sartain S, Cummings JF, Kipps C, Nouraei R, Gwiggner M, Metcalf C, Batchelor J. Identification of cohorts with inflammatory bowel disease amidst fragmented clinical databases via machine learning. Digestive Diseases and Sciences. 2025 Oct;70(10):3309-22.
+3. [BMC Gastroenterology](https://bmcgastroenterol.biomedcentral.com/articles/10.1186/s12876-025-03608-5). Stammers M, Ramgopal B, Owusu Nimako A, Vyas A, Nouraei R, Metcalf C, Batchelor J, Shepherd J, Gwiggner M. A foundation systematic review of natural language processing applied to gastroenterology & hepatology. BMC Gastroenterology. 2025 Feb 6;25(1):58.
 
 ## Models
 1. Contained in this repo and associated repositories as .joblb/.pkl files with associated disclaimers but from a trusted source. Use at your own discretion. 
