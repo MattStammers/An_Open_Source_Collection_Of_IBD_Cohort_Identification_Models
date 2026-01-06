@@ -37,7 +37,7 @@ pandas = "^2.2.3"
 # Data visualization
 seaborn = "^0.13.2"
 matplotlib = "^3.10.0"
-bokeh = "^3.6.2"
+bokeh = "^3.8.2"
 
 # NLP and text processing
 spacy = "^3.8.3"
