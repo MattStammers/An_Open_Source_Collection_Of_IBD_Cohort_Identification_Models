@@ -268,17 +268,15 @@ def run_roberta_workflow(
     # ----------------------------------------------------------------- #
     # helper: aggregate Cumulative_Pred_roberta up to patient
     def _aggregate_doc_preds_to_patient(df: pd.DataFrame) -> pd.DataFrame:
-        # 1) pick only the cols we need
-        label_cols = list(c.IBD_COLUMNS.values())
         cols = [
             "study_id",
             "Cumulative_Pred_roberta",
             "Cumulative_Prob_roberta",
-        ] + label_cols
+            "Patient_Has_IBD",
+        ]
         sub = df[cols].copy()
 
-        # 2) explicit fill for any missing labels or probs
-        sub[label_cols] = sub[label_cols].fillna(0)
+        # 2) explicit fill for any missing probs
         sub["Cumulative_Prob_roberta"] = sub["Cumulative_Prob_roberta"].fillna(0.0)
 
         # 3) group by patient, aggregating OR‐style via max()
@@ -286,12 +284,10 @@ def run_roberta_workflow(
             {
                 "Cumulative_Pred_roberta": "max",
                 "Cumulative_Prob_roberta": "max",
-                **{col: "max" for col in label_cols},
+                "Patient_Has_IBD": "max",
             }
         )
 
-        # 4) compute the patient‐level gold as OR across all IBD labels
-        agg["Cumulative_Patient_Gold"] = agg[label_cols].max(axis=1)
         return agg
 
     for split_name, split_df in (
@@ -302,7 +298,7 @@ def run_roberta_workflow(
 
         eval_df = evaluate(
             pat_from_doc,
-            {"Cumulative_Pred_roberta": "Cumulative_Patient_Gold"},
+            {"Cumulative_Pred_roberta": "Patient_Has_IBD"},
             dataset_name=split_name,
             pred_type="roberta",
             total_count=len(pat_from_doc),
