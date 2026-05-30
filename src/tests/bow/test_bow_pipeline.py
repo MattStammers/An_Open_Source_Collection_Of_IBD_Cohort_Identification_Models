@@ -369,9 +369,9 @@ def test_pipeline_creates_expected_artifacts(
 
     # ------------------- models --------------------
     model_checks = [
-        analysis_root / "raw" / "models" / p / "text_column" / "model.pkl"
-        for p in ["document", "patient"]
-    ] + [analysis_root / "raw" / "models" / "patient_text_aggregate" / "model.pkl"]
+        analysis_root / "raw" / "models" / "document" / "text_column" / "model.pkl",
+        analysis_root / "raw" / "models" / "patient_text_aggregate" / "model.pkl",
+    ]
     for m in model_checks:
         assert m.exists(), f"Model artefact missing at {m}"
 

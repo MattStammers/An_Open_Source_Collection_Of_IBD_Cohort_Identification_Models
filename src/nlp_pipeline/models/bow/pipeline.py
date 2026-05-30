@@ -325,65 +325,13 @@ def run_bow_workflow(
     results += [train_eval, val_eval]
 
     # -------------------------------------------------------------------#
-    # Patient‑level models (per report column)                           #
+    # Patient-level reporting from document-trained models               #
     # -------------------------------------------------------------------#
-    patient_pred_cols: List[str] = []
-    for report_col, label_col in c.IBD_COLUMNS.items():
-        logging.info("[%s] training patient-level model '%s'", mode, report_col)
-        # ensure directory for patient‐level model
-        _ensure_dir(root / "models" / "patient" / report_col)
-        model, _ = train_bow_model(
-            train_df,
-            report_col,
-            label_col,
-            root / "models" / "patient" / report_col,
-            shap_explain=False,
-            cv=5,
-        )
-        pred_col = f"Patient_{report_col}_Pred_BOW"
-        patient_pred_cols.append(pred_col)
-        for df in (train_df, val_df):
-            df[pred_col] = predict_bow(model, df, report_col)
+    train_grp = train_doc2pat.copy()
+    val_grp = val_doc2pat.copy()
 
-    # Aggregate to single-row-per-patient ---------------------------------
-    train_grp = _aggregate_patients(
-        train_df, patient_pred_cols, list(c.IBD_COLUMNS.values())
-    )
-    val_grp = _aggregate_patients(
-        val_df, patient_pred_cols, list(c.IBD_COLUMNS.values())
-    )
-
-    train_grp["Cumulative_Patient_Level_Gold"] = train_grp[
-        list(c.IBD_COLUMNS.values())
-    ].max(axis=1)
-    val_grp["Cumulative_Patient_Level_Gold"] = val_grp[
-        list(c.IBD_COLUMNS.values())
-    ].max(axis=1)
-
-    results += [
-        evaluate(
-            train_grp,
-            c.IBD_COLUMNS,
-            dataset_name="Training_Set",
-            pred_type="Patient_BOW",
-            group_level=True,
-            total_count=len(train_grp),
-        ),
-        evaluate(
-            val_grp,
-            c.IBD_COLUMNS,
-            dataset_name="Validation_Set",
-            pred_type="Patient_BOW",
-            group_level=True,
-            total_count=len(val_grp),
-        ),
-    ]
-
-    # ------------------------------------------------------------------#
-    # Final OR patient flag + calibrated probability                    #
-    # ------------------------------------------------------------------#
     for grp_df, base_df in ((train_grp, train_df), (val_grp, val_df)):
-        grp_df["Final_Prediction"] = grp_df[patient_pred_cols].max(axis=1)
+        grp_df["Final_Prediction"] = grp_df["Cumulative_Pred_BOW"]
         grp_df["Final_Prob_BOW"] = (
             base_df.groupby("study_id")["Cumulative_Prob_BOW"]
             .max()
@@ -393,7 +341,7 @@ def run_bow_workflow(
         )
 
     # ------------------ final evaluation via generic evaluate -------------
-    final_map = {"Final_Prediction": "Cumulative_Patient_Level_Gold"}
+    final_map = {"Final_Prediction": "Patient_Has_IBD"}
     results += [
         evaluate(
             train_grp,
@@ -485,7 +433,7 @@ def run_bow_workflow(
             fair = evaluate_fairness_dual(
                 df=grp_df,
                 final_col="Final_Prediction",
-                gold_col="Cumulative_Patient_Level_Gold",
+                gold_col="Patient_Has_IBD",
                 demographic_attrs=c.DEMOGRAPHICS_KEYS,
                 dataset_name=f"{split_name.capitalize()}_Set",
                 note=f"Final_BOW_{mode}",
