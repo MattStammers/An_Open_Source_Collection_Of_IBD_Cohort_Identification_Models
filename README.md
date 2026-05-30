@@ -1,10 +1,10 @@
 # Open-Source IBD Cohort Identification Models
 
-Repository accompanying thesis work and associated publications on natural language processing for identification of inflammatory bowel disease cohorts from secondary care free text.
+### Subtitle: IBD_NLP_Cohort_Identification_Models_IC-IBD_Part_2
 
-## Author
+## By Dr Matt Stammers
 
-Matt Stammers
+### Completed: 22/06/2025. Readme updated: 30/05/2026.
 
 ## Purpose
 
