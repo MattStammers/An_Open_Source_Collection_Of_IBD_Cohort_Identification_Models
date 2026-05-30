@@ -1,7 +1,7 @@
 """
-Bag of Words (BOW) pipeline
+BoW pipeline
 ==========================
-A single entry point that trains, evaluates and analyses a suite of Bag of Words
+A single entry point that trains, evaluates and analyses a suite of BoW
 model under the unified evaluation framework. It supports two text variants:
 
 1. **Raw text**   untouched clinical notes.
@@ -11,7 +11,7 @@ For each variant the pipeline performs the following steps
 --------------------------------------------------------
 Setup
   A. Load and pre-process data.
-  B. Train a BOW classifier for every free-text column at **document** level and
+  B. Train a BoW classifier for every free-text column at **document** level and
      at **patient** level.
 
 Evaluation
@@ -50,9 +50,9 @@ from nlp_pipeline.common.resource_monitor import ResourceMonitor
 
 from .model import predict_bow, train_bow_model
 
-# ----------------------------------------------------------------------------#
-# Helper Utilities                                                            #
-# ----------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
+# Helper utilities                                                            #
+# --------------------------------------------------------------------------- #
 logger = logging.getLogger(__name__)
 
 
@@ -61,9 +61,11 @@ def _ensure_dir(path: Path) -> None:
 
     path.mkdir(parents=True, exist_ok=True)
 
+
 def add_doc_digest(df: pd.DataFrame) -> pd.DataFrame:
     df["doc_digest"] = df.apply(_row_digest, axis=1)
     return df
+
 
 def _aggregate_patients(
     df: pd.DataFrame,
@@ -100,7 +102,7 @@ def _aggregate_patients(
     # 5) Group by patient ID
     return sub.groupby(id_col, as_index=False).agg(agg_map)
 
-# Text columns used throughout the pipeline ---------------------------------
+# Text columns used throughout the pipeline 
 TEXT_COLS: List[str] = list(c.COLWISE_COLUMNS)
 
 def _row_digest(row: pd.Series) -> str:
@@ -156,9 +158,9 @@ def _assert_data_splits_ok(
     else:
         logging.info("Data-split diagnostics passed - no leakage detected")
 
-# ----------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 # Core workflow for a single doc type mode ('raw' | 'umls')                   #
-# ----------------------------------------------------------------------------#
+# --------------------------------------------------------------------------- #
 
 def run_bow_workflow(
     train_df: pd.DataFrame,
@@ -196,9 +198,9 @@ def run_bow_workflow(
 
     results: List[pd.DataFrame] = []
 
-    # -------------------------------------------------------------------#
+    # ------------------------------------------------------------------ #
     # Document‑level models per report column                            #
-    # -------------------------------------------------------------------#
+    # ------------------------------------------------------------------ #
     doc_label_cols = list(c.COLWISE_COLUMNS.values())
     for df in (train_df, val_df):
         df["Cumulative_Gold"] = df[doc_label_cols].any(axis=1).astype(int)
@@ -247,9 +249,9 @@ def run_bow_workflow(
         ),
     ]
 
-    # -------------------------------------------------------------------#
+    # ------------------------------------------------------------------ #
     # Cumulative OR across document columns                              #
-    # -------------------------------------------------------------------#
+    # ------------------------------------------------------------------ #
     cum_pred_cols = [f"{rc}_Pred_BOW" for rc in c.COLWISE_COLUMNS]
     cum_proba_cols = [f"{rc}_Prob_BOW" for rc in c.COLWISE_COLUMNS]
 
@@ -277,10 +279,9 @@ def run_bow_workflow(
         ),
     ]
 
-    # -------------------------------------------------------------------#
-    # Doc-trained models tested at patient level                         #
-    # -------------------------------------------------------------------#
-
+    # ------------------------------------------------------------------- #
+    # Doc-trained models tested at patient level                          #
+    # ------------------------------------------------------------------- #
     # 1) Document-level prediction columns
     doc_pred_cols = [f"{rc}_Pred_BOW" for rc in c.COLWISE_COLUMNS]
 
@@ -324,14 +325,66 @@ def run_bow_workflow(
     # 6) Append
     results += [train_eval, val_eval]
 
-    # -------------------------------------------------------------------#
-    # Patient-level reporting from document-trained models               #
-    # -------------------------------------------------------------------#
-    train_grp = train_doc2pat.copy()
-    val_grp = val_doc2pat.copy()
+    # ------------------------------------------------------------------ #
+    # Patient‑level models (per report column)                           #
+    # ------------------------------------------------------------------ #
+    patient_pred_cols: List[str] = []
+    for report_col, label_col in c.IBD_COLUMNS.items():
+        logging.info("[%s] training patient-level model '%s'", mode, report_col)
+        # ensure directory for patient‐level model
+        _ensure_dir(root / "models" / "patient" / report_col)
+        model, _ = train_bow_model(
+            train_df,
+            report_col,
+            label_col,
+            root / "models" / "patient" / report_col,
+            shap_explain=False,
+            cv=5,
+        )
+        pred_col = f"Patient_{report_col}_Pred_BOW"
+        patient_pred_cols.append(pred_col)
+        for df in (train_df, val_df):
+            df[pred_col] = predict_bow(model, df, report_col)
 
+    # Aggregate to single-row-per-patient ---------------------------------
+    train_grp = _aggregate_patients(
+        train_df, patient_pred_cols, list(c.IBD_COLUMNS.values())
+    )
+    val_grp = _aggregate_patients(
+        val_df, patient_pred_cols, list(c.IBD_COLUMNS.values())
+    )
+
+    train_grp["Cumulative_Patient_Level_Gold"] = train_grp[
+        list(c.IBD_COLUMNS.values())
+    ].max(axis=1)
+    val_grp["Cumulative_Patient_Level_Gold"] = val_grp[
+        list(c.IBD_COLUMNS.values())
+    ].max(axis=1)
+
+    results += [
+        evaluate(
+            train_grp,
+            c.IBD_COLUMNS,
+            dataset_name="Training_Set",
+            pred_type="Patient_BOW",
+            group_level=True,
+            total_count=len(train_grp),
+        ),
+        evaluate(
+            val_grp,
+            c.IBD_COLUMNS,
+            dataset_name="Validation_Set",
+            pred_type="Patient_BOW",
+            group_level=True,
+            total_count=len(val_grp),
+        ),
+    ]
+
+    # ------------------------------------------------------------------ #
+    # Final OR patient flag + calibrated probability                     #
+    # ------------------------------------------------------------------ #
     for grp_df, base_df in ((train_grp, train_df), (val_grp, val_df)):
-        grp_df["Final_Prediction"] = grp_df["Cumulative_Pred_BOW"]
+        grp_df["Final_Prediction"] = grp_df[patient_pred_cols].max(axis=1)
         grp_df["Final_Prob_BOW"] = (
             base_df.groupby("study_id")["Cumulative_Prob_BOW"]
             .max()
@@ -340,8 +393,7 @@ def run_bow_workflow(
             .values
         )
 
-    # ------------------ final evaluation via generic evaluate -------------
-    final_map = {"Final_Prediction": "Patient_Has_IBD"}
+    final_map = {"Final_Prediction": "Cumulative_Patient_Level_Gold"}
     results += [
         evaluate(
             train_grp,
@@ -361,18 +413,18 @@ def run_bow_workflow(
         ),
     ]
 
-    # ------------------------------------------------------------------#
-    # Calibration summary (validation only)                             #
-    # ------------------------------------------------------------------#
+    # ------------------------------------------------------------------ #
+    # Calibration summary (validation only)                              #
+    # ------------------------------------------------------------------ #
     res_df = pd.concat(results, ignore_index=True)
     (root / "calibration").mkdir(exist_ok=True, parents=True)
     res_df[res_df["Dataset"] == "Validation_Set"][
         ["Report_Column", "Prediction_Type", "Brier_Score"]
     ].to_csv(root / "calibration" / "brier_scores.csv", index=False)
 
-    # ------------------------------------------------------------------#
-    # Feature importance on aggregated patient text                     #
-    # ------------------------------------------------------------------#
+    # ------------------------------------------------------------------ #
+    # Feature importance on aggregated patient text                      #
+    # ------------------------------------------------------------------ #
     tmp = train_df.copy()
     text_cols = list(c.COLWISE_COLUMNS.keys())  # To access the raw text
     existing_text_cols = [col for col in text_cols if col in tmp.columns]
@@ -421,9 +473,9 @@ def run_bow_workflow(
             cv=5,
         )
 
-    # ------------------------------------------------------------------#
-    # Fairness                                                          #
-    # ------------------------------------------------------------------#
+    # ------------------------------------------------------------------ #
+    # Fairness                                                           #
+    # ------------------------------------------------------------------ #
     if run_fairness:
         fair_root = root / "fairness"
         for split_name, grp_df in (("training", train_grp), ("validation", val_grp)):
@@ -433,7 +485,7 @@ def run_bow_workflow(
             fair = evaluate_fairness_dual(
                 df=grp_df,
                 final_col="Final_Prediction",
-                gold_col="Patient_Has_IBD",
+                gold_col="Cumulative_Patient_Level_Gold",
                 demographic_attrs=c.DEMOGRAPHICS_KEYS,
                 dataset_name=f"{split_name.capitalize()}_Set",
                 note=f"Final_BOW_{mode}",
@@ -462,11 +514,9 @@ def run_bow_workflow(
 
     return res_df
 
-
 # ---------------------------------------------------------------------------#
 # Entry-Point (command‑line)                                                 #
 # ---------------------------------------------------------------------------#
-
 
 def main(disable_umls: bool = False) -> None:
     """CLI entry-point - executes the full two-variant pipeline."""
@@ -476,11 +526,11 @@ def main(disable_umls: bool = False) -> None:
     _ensure_dir(analysis_root)
     _ensure_dir(results_dir)
 
+    # UTF‑8 logging – shields against stray non‑ASCII characters -----------
     configure_logging(
         log_dir=str(c.BOW_ANALYSIS_DIR),
         custom_logger=logger,
     )
-    logging.info("Starting BOW pipeline")
 
     monitor = ResourceMonitor(interval=0.1)
     monitor.start()
@@ -536,8 +586,7 @@ def main(disable_umls: bool = False) -> None:
         ]
     ).to_csv(analysis_root / "resources.csv", index=False)
 
-    logging.info("BOW pipeline complete")
-
+    logging.info("BoW pipeline complete")
 
 if __name__ == "__main__":
     main()
