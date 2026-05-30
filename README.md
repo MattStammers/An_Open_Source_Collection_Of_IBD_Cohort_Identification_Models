@@ -32,6 +32,202 @@ This repository includes:
 This repository does not include the full LLM serving and prompt-execution infrastructure used for chapter four - this is provided in 
 https://github.com/MattStammers/FM_metacognition_during_cohort_identification. The local LLM code present here is limited to downstream parsing and analytics of generated outputs.
 
+## Repository Structure
+
+The codebase is organised around reusable shared utilities plus model-specific workflow packages.
+
+```text
+An_Open_Source_Collection_Of_IBD_Cohort_Identification_Models/
+|-- README.md
+|-- pyproject.toml
+|-- requirements.txt
+|-- src/
+|   |-- main.py
+|   `-- nlp_pipeline/
+|       |-- common/
+|       |   |-- caching.py
+|       |   |-- data_utils.py
+|       |   |-- evaluation.py
+|       |   |-- fairness.py
+|       |   |-- feature_importance.py
+|       |   |-- logging_setup.py
+|       |   `-- resource_monitor.py
+|       |-- config/
+|       |   |-- constants.py
+|       |   `-- sample_size_calculation.py
+|       |-- doc2patient/
+|       |   |-- decision_tree.py
+|       |   |-- heatmap.py
+|       |   `-- log_reg.py
+|       |-- models/
+|       |   |-- regex/
+|       |   |   |-- model.py
+|       |   |   `-- pipeline.py
+|       |   |-- spacy/
+|       |   |   |-- model.py
+|       |   |   `-- pipeline.py
+|       |   |-- bow/
+|       |   |   |-- model.py
+|       |   |   `-- pipeline.py
+|       |   |-- tf_idf/
+|       |   |   |-- model.py
+|       |   |   `-- pipeline.py
+|       |   |-- word2vec/
+|       |   |   |-- model.py
+|       |   |   `-- pipeline.py
+|       |   |-- sbert_base/
+|       |   |-- sbert_med/
+|       |   |-- distilbert/
+|       |   |-- bio_clinical_bert/
+|       |   |-- roberta/
+|       |   `-- llm_analytics/
+|       `-- tests/
+|           |-- utilities/
+|           |-- bow/
+|           |-- tfidf/
+|           |-- word2vec/
+|           |-- spacy/
+|           |-- regex/
+|           |-- sbert/
+|           |-- sbert_med/
+|           |-- distilbert/
+|           `-- roberta/
+|-- models/
+|   |-- bert/
+|   |-- bow/
+|   |-- regex/
+|   |-- spacy/
+|   |-- tfidf/
+|   `-- word2vec/
+`-- docs/
+```
+
+The inline tree above provides a high-level map of the repository layout for readers who want an explicit structural summary before working through the detailed description below.
+
+- `src/main.py`: top-level entry point that runs the included pipelines sequentially
+- `src/nlp_pipeline/config/`: global constants, file paths, and column mappings
+- `src/nlp_pipeline/common/`: shared utilities for data loading, evaluation, fairness, explainability, caching, logging, and resource monitoring
+- `src/nlp_pipeline/models/`: one subpackage per model family
+- `src/nlp_pipeline/doc2patient/`: supporting analyses focused on document-to-patient relationships
+- `src/tests/`: automated tests for models and shared utilities
+- `models/`: selected released model artefacts and model-specific notes
+
+Within `src/nlp_pipeline/models/`, most model families follow the same internal structure:
+
+- `pipeline.py`: orchestration of the full workflow for that model family
+- `model.py`: training, prediction, and model-specific helper logic
+- `__init__.py`: package definition
+
+This means the repository is not built around one single pipeline file. Instead, it uses a repeated experimental framework applied to multiple model families.
+
+## How Execution Works
+
+Running `python src/main.py` triggers a sequence of independent model pipelines rather than one combined ensemble model.
+
+At present the main script executes the following in order:
+
+1. regex
+2. spaCy
+3. bag-of-words
+4. TF-IDF
+5. Word2Vec
+6. SBERT-base
+7. SBERT-med
+8. DistilBERT
+9. BioClinicalBERT
+10. RoBERTa
+
+Each of those model families exposes its own `main()` function, and each `main()` function is responsible for running that model family end to end.
+
+## How a Typical Pipeline Works
+
+Although the implementation differs slightly by model family, the workflows are intentionally similar so that outputs can be compared more directly.
+
+### 1. Data loading and preprocessing
+
+Each pipeline starts by loading training and validation data through the shared preprocessing code in `common/data_utils.py`.
+
+This stage typically:
+
+- reads CSV or Excel input files
+- removes configured columns that are not required
+- checks expected text columns and label columns
+- standardises demographic fields used for subgroup analysis
+- prepares combined text fields where required
+- ensures patient-level labels such as `Patient_Has_IBD` are available when needed downstream
+
+### 2. Split validation and leakage checks
+
+Before fitting a model, pipelines usually run simple diagnostics intended to identify obvious leakage problems. These checks commonly include patient overlap between train and validation sets and exact duplicate document content across splits.
+
+### 3. Document-level training
+
+The central pattern in this repository is that model training starts at the document level. For each configured report column, a model is trained to classify that specific document type.
+
+Depending on the model family, this may involve:
+
+- a rule-based matcher
+- a vectoriser plus logistic regression classifier
+- a transformer fine-tuning workflow
+
+### 4. Document-level prediction and evaluation
+
+After training, the pipeline writes predictions and probabilities back onto the data frame and evaluates them using the shared metric engine in `common/evaluation.py`.
+
+This evaluation layer is responsible for metrics such as:
+
+- accuracy
+- precision
+- recall
+- specificity
+- NPV
+- F1 score
+- MCC
+- Brier score and calibration outputs where available
+
+### 5. Aggregation from documents to patients
+
+After document-level predictions are produced, the pipelines aggregate those outputs to patient level, usually by grouping on `study_id` and collapsing predictions across a patient's available documents.
+
+This is a key design feature of the repository because the thesis analyses compare document-level behaviour with patient-level cohort identification.
+
+### 6. Patient-level evaluation
+
+The patient-level outputs are then evaluated against patient-level gold labels. This provides the patient-level summary metrics used in the downstream analyses and tables.
+
+### 7. Additional artefacts
+
+Depending on the pipeline, extra outputs may then be generated, such as:
+
+- calibration summaries
+- feature-importance files
+- SHAP or LIME explainability outputs
+- fairness tables and plots
+- runtime and emissions summaries
+- saved models in joblib or transformer formats
+
+## Shared Versus Model-Specific Code
+
+Understanding this separation is useful when reviewing the repository.
+
+Shared code under `src/nlp_pipeline/common/` handles tasks that are reused across model families, including:
+
+- preprocessing support
+- metric calculation
+- fairness analysis
+- plotting
+- logging
+- monitoring and emissions tracking
+
+Model-specific code under `src/nlp_pipeline/models/` contains the parts that differ between approaches, such as:
+
+- regex rules
+- spaCy phrase matching logic
+- scikit-learn vectorisation and classifier setup
+- transformer training and inference code
+
+In short, `pipeline.py` files define the experimental workflow, while `model.py` files define the modelling mechanics.
+
 ## External Model Links
 
 - Hugging Face collection: [BERT-based IBD models](https://huggingface.co/collections/MattStammers/a-collection-of-ibd-bert-models-682b01badbaa646380f54b14)
@@ -133,7 +329,7 @@ It is not intended for direct clinical decision-making or unsupervised operation
 
 ## Corrections
 
-30/05/2026: Fixed BoW pipeline bug so that it trains at the document not patient level. This was artificiall inflating its performance before.
+30/05/2026: Fixed BoW pipeline bug so that it trains at the document not patient level. This was artificially inflating its performance before.
 
 ## Contributing
 
