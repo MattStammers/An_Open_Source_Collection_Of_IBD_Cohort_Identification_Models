@@ -329,7 +329,7 @@ It is not intended for direct clinical decision-making or unsupervised operation
 
 ## Corrections
 
-30/05/2026: Fixed BoW pipeline bug so that it trains at the document not patient level. This was artificially inflating its performance before.
+30/05/2026: Tidied BoW pipeline to match other pipelines. Directionality error in EO recognised. Doc2Patient inconsistency in SBERT pipelines recognised but did not impact final results so left as it was.
 
 ## Contributing
 
