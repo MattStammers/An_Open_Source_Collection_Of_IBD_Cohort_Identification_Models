@@ -131,6 +131,10 @@ This repository is suitable for:
 
 It is not intended for direct clinical decision-making or unsupervised operational deployment.
 
+## Corrections
+
+30/05/2026: Fixed BoW pipeline bug so that it trains at the document not patient level. This was artificiall inflating its performance before.
+
 ## Contributing
 
 Contributions that improve clarity, reproducibility, testing, or methodological robustness are welcome. Please submit a pull request with a clear description of the proposed change.
