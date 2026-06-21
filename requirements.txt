@@ -48,7 +48,7 @@ fastapi==0.115.11
 ffmpy==0.5.0
 fief-client==0.20.0
 filelock==3.17.0
-fonttools==4.56.0
+fonttools==4.61.0
 frozenlist==1.5.0
 fsspec==2024.12.0
 gradio==4.44.1
